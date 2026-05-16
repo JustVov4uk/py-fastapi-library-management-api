@@ -2,8 +2,10 @@ from typing import List
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 import crud
-from database import SessionLocal
+from database import SessionLocal, Base, engine
 from schemas import AuthorRead, AuthorCreate, BookCreate, BookRead
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -35,5 +37,10 @@ def create_book(book: BookCreate, db: Session = Depends(get_db)):
     return crud.create_book(db, book=book)
 
 @app.get("/books/", response_model=List[BookRead])
-def read_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_books(db, skip=skip, limit=limit)
+def read_books(
+        skip: int = 0,
+        limit: int = 10,
+        db: Session = Depends(get_db),
+        author_id: int = None,
+):
+    return crud.get_books(db, skip=skip, limit=limit, author_id=author_id)
